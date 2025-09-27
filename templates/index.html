@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レシート分析 - 支店の買い物パターンを発見！</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 レシート分析システム</h1>
+            <p>4つの支店の買い物パターンを分析して、それぞれの特徴を見つけよう！</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="topicCount">分析するトピック数:</label>
+                <select id="topicCount">
+                    <option value="3">3トピック</option>
+                    <option value="4">4トピック</option>
+                    <option value="5" selected>5トピック</option>
+                    <option value="6">6トピック</option>
+                    <option value="7">7トピック</option>
+                </select>
+            </div>
+            <button id="analyzeBtn" onclick="runAnalysis()">🔍 分析開始！</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>分析中... しばらくお待ちください</p>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <div class="summary">
+                <h2>📊 分析結果</h2>
+                <div id="summaryInfo"></div>
+            </div>
+
+            <div class="topics-section">
+                <h3>🎯 発見されたトピック</h3>
+                <div id="topicsInfo"></div>
+            </div>
+
+            <div class="chart-section">
+                <h3>🏪 支店別トピック分布</h3>
+                <canvas id="storeChart"></canvas>
+            </div>
+
+            <div class="insights">
+                <h3>💡 分析結果の特徴</h3>
+                <div id="insights"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
