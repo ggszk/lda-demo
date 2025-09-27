@@ -13,16 +13,30 @@ async function runAnalysis() {
     results.style.display = 'none';
     
     try {
-        const response = await fetch(`/analyze?topics=${topicCount}`);
+        // タイムアウト付きfetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒タイムアウト
+        
+        const response = await fetch(`/analyze?topics=${topicCount}`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
         
         if (response.ok) {
             displayResults(data);
         } else {
-            alert(`エラー: ${data.error}`);
+            console.error('サーバーエラー:', data);
+            alert(`分析エラー: ${data.error || '不明なエラー'}`);
         }
     } catch (error) {
-        alert(`エラーが発生しました: ${error.message}`);
+        console.error('クライアントエラー:', error);
+        if (error.name === 'AbortError') {
+            alert('分析がタイムアウトしました。しばらく待ってから再試行してください。');
+        } else {
+            alert(`エラーが発生しました: ${error.message}`);
+        }
     } finally {
         // UI状態を元に戻す
         analyzeBtn.disabled = false;
@@ -42,6 +56,9 @@ function displayResults(data) {
     
     // グラフを表示
     displayChart(data);
+    
+    // ワードクラウドを表示
+    displayWordclouds(data.store_wordclouds);
     
     // インサイトを表示
     displayInsights(data);
@@ -171,6 +188,38 @@ function displayInsights(data) {
     insights.innerHTML = insightsList.join('');
 }
 
+function displayWordclouds(wordclouds) {
+    const container = document.getElementById('wordcloudsContainer');
+    
+    if (!wordclouds || Object.keys(wordclouds).length === 0) {
+        container.innerHTML = '<div class="error-message">ワードクラウドデータがありません</div>';
+        return;
+    }
+    
+    console.log('ワードクラウドデータ:', wordclouds);
+    
+    // 支店の順序を固定（グラフと同じ順序）
+    const storeOrder = ['中央区', '北区', '東区', '西区'];
+    
+    container.innerHTML = storeOrder.map(store => {
+        const data = wordclouds[store];
+        if (!data) return '';
+        
+        return `
+            <div class="wordcloud-card">
+                <h4>${store}店</h4>
+                <div class="wordcloud-image">
+                    <img src="${data.image}" alt="${store}店のワードクラウド" />
+                </div>
+                <div class="wordcloud-info">
+                    <p><strong>商品種類:</strong> ${data.product_count}種類</p>
+                    <p><strong>上位3商品:</strong> ${data.top_products.slice(0, 3).map(item => item[0]).join(', ')}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 function getTopicColor(index, alpha = 0.6) {
     const colors = [
         `rgba(239, 68, 68, ${alpha})`,   // 赤
@@ -187,15 +236,8 @@ function getTopicColor(index, alpha = 0.6) {
     return colors[index % colors.length];
 }
 
-// ページ読み込み時に保存された結果があれば表示
+// ページ読み込み時の処理（保存機能無効化のため削除）
 window.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const response = await fetch('/results');
-        if (response.ok) {
-            const data = await response.json();
-            displayResults(data);
-        }
-    } catch (error) {
-        console.log('保存された結果がありません');
-    }
+    console.log('アプリが読み込まれました。「🔍 分析開始！」ボタンで分析を開始してください。');
+    // 複数ユーザー対応のため、保存された結果の読み込みは無効化
 });

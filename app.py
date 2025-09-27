@@ -1,7 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 import json
 import os
-from analysis import analyze_receipt_data
+from analysis import analyze_receipt_data, generate_store_wordclouds
 
 app = Flask(__name__)
 
@@ -23,19 +23,21 @@ def analyze():
     try:
         # 分析実行
         results = analyze_receipt_data(n_topics)
+        
+        # 支店別ワードクラウドデータを追加
+        results['store_wordclouds'] = generate_store_wordclouds()
+        
         return jsonify(results)
     except Exception as e:
         return jsonify({'error': f'分析エラー: {str(e)}'}), 500
 
 @app.route('/results')
 def get_results():
-    """保存された分析結果を返す"""
-    if os.path.exists('analysis_results.json'):
-        with open('analysis_results.json', 'r', encoding='utf-8') as f:
-            results = json.load(f)
-        return jsonify(results)
-    else:
-        return jsonify({'error': '分析結果がありません。まず分析を実行してください。'}), 404
+    """非推奨エンドポイント：リアルタイム分析を使用してください"""
+    return jsonify({
+        'error': 'この機能は無効化されています。「🔍 分析開始！」ボタンをクリックしてください。',
+        'message': '複数ユーザーの同時使用に対応するため、保存機能を無効化しました。'
+    }), 404
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
