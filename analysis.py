@@ -22,7 +22,8 @@ def analyze_receipt_data(n_topics=5):
     print(f"📊 レシートデータの分析を開始します（{n_topics}トピックで分析）...")
     
     # 1. データを読み込み
-    df = pd.read_csv('レシートデータ.csv')
+    csv_path = os.path.join(os.path.dirname(__file__), 'receipt_data.csv')
+    df = pd.read_csv(csv_path)
     print(f"✅ {len(df)}件のレシートデータを読み込みました")
     
     # 2. 商品名を数値データに変換
@@ -105,7 +106,8 @@ def generate_store_wordclouds():
     print("📊 支店別ワードクラウドを生成中...")
     
     # データを読み込み
-    df = pd.read_csv('レシートデータ.csv')
+    csv_path = os.path.join(os.path.dirname(__file__), 'receipt_data.csv')
+    df = pd.read_csv(csv_path)
     
     # 支店の順序を固定（グラフと同じ順序）
     stores = ['中央区', '北区', '東区', '西区']
